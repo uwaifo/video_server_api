@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/uwaifo/video_server_api/domain/entity"
+	"github.com/uwaifo/video_server_api/domian/entity"
 )
 
 // UserRepository . . .
