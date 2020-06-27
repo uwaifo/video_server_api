@@ -1,6 +1,9 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/uwaifo/video_server_api/infrastructure/auth"
@@ -8,8 +11,6 @@ import (
 	"github.com/uwaifo/video_server_api/interfaces"
 	"github.com/uwaifo/video_server_api/interfaces/fileupload"
 	"github.com/uwaifo/video_server_api/interfaces/middleware"
-	"log"
-	"os"
 )
 
 func init() {
@@ -21,7 +22,7 @@ func init() {
 
 func main() {
 
-	dbdriver := os.Getenv("DB_DRIVER")
+	dbDriver := os.Getenv("DB_DRIVER")
 	host := os.Getenv("DB_HOST")
 	password := os.Getenv("DB_PASSWORD")
 	user := os.Getenv("DB_USER")
@@ -30,11 +31,11 @@ func main() {
 
 	// Latter add some redis stuff
 	//redis details
-	redis_host := os.Getenv("REDIS_HOST")
-	redis_port := os.Getenv("REDIS_PORT")
-	redis_password := os.Getenv("REDIS_PASSWORD")
+	redisHost := os.Getenv("REDIS_HOST")
+	redisPort := os.Getenv("REDIS_PORT")
+	redisPassword := os.Getenv("REDIS_PASSWORD")
 
-	services, err := persistence.NewRepositories(dbdriver, user, password, port, host, dbname)
+	services, err := persistence.NewRepositories(dbDriver, user, password, port, host, dbname)
 	if err != nil {
 		panic(err)
 	}
@@ -43,7 +44,7 @@ func main() {
 	services.AutoMigrate()
 
 	//redis connection
-	redisService, err := auth.NewRedisDB(redis_host, redis_port, redis_password)
+	redisService, err := auth.NewRedisDB(redisHost, redisPort, redisPassword)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,6 +53,7 @@ func main() {
 	fd := fileupload.NewFileUpload()
 
 	users := interfaces.NewUsers(services.User, redisService.Auth, tk)
+	photoWorks := interfaces.NewPhotoWork(services.PhotoWork, services.User, redisService.Auth, tk)
 	foods := interfaces.NewFood(services.Food, services.User, fd, redisService.Auth, tk)
 	authenticate := interfaces.NewAuthenticate(services.User, redisService.Auth, tk)
 
@@ -69,10 +71,17 @@ func main() {
 
 	//post routes
 	r.POST("/food", middleware.AuthMiddleware(), middleware.MaxSizeAllowed(8192000), foods.SaveFood)
+	r.POST("/addfood", foods.SaveFood)
 	r.PUT("/food/:food_id", middleware.AuthMiddleware(), middleware.MaxSizeAllowed(8192000), foods.UpdateFood)
 	r.GET("/food/:food_id", foods.GetFoodAndCreator)
 	r.DELETE("/food/:food_id", middleware.AuthMiddleware(), foods.DeleteFood)
 	r.GET("/food", foods.GetAllFood)
+
+	//photo works routes
+	r.POST("/work", middleware.AuthMiddleware(), photoWorks.SavePhotoWork)
+	r.GET("/work/:photo_work_id", middleware.AuthMiddleware(), photoWorks.GetUserPhotoWork)
+	r.GET("/work", photoWorks.GetAllPhotoWork)
+	r.PUT("/work/:photo_work_id", middleware.AuthMiddleware(), photoWorks.UpdatePhotoWork)
 
 	//authentication routes
 	r.POST("/login", authenticate.Login)

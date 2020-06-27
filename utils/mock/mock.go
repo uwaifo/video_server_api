@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"food-app/domain/entity"
-	"food-app/infrastructure/auth"
+	"github.com/uwaifo/video_server_api/domian/entity"
+	"github.com/uwaifo/video_server_api/infrastructure/auth"
 	"mime/multipart"
 	"net/http"
 )

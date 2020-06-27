@@ -2,15 +2,16 @@ package interfaces
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/uwaifo/video_server_api/application"
 	"github.com/uwaifo/video_server_api/domian/entity"
 	"github.com/uwaifo/video_server_api/infrastructure/auth"
 	"github.com/uwaifo/video_server_api/interfaces/fileupload"
-	"net/http"
-	"os"
-	"strconv"
-	"time"
 )
 
 type Food struct {
